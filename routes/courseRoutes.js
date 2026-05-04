@@ -1,6 +1,6 @@
 const express=require("express")
 const router= express.Router()
-const {courseValidation}=require('../middlewates/validationSchema')
+const {courseValidation,updateCourseValidation}=require('../middlewates/validationSchema')
 const courseControllers=require('../controllers/coursesCon')
 router.route('/')
     .get( courseControllers.getAllCourses)
@@ -9,7 +9,7 @@ router.route('/')
 
 router.route('/:id')
     .get(courseControllers.getCourse )
-    .patch(courseControllers.updateCourse)
+    .patch(updateCourseValidation,courseControllers.updateCourse)
     .delete(courseControllers.deleteCourse)
 
 module.exports=router
