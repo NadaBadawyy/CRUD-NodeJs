@@ -2,7 +2,12 @@ const Course= require('../models/courses.model')
 const {validationResult}=require('express-validator')
 const httpStatusText=require('../utils/httpStatusText')
 const getAllCourses=async (req, res) => {
-    const courses= await Course.find()
+    const query=req.query
+    const limit= query.limit||2
+    const page= query.page||1
+    const skip= (page-1)*limit
+
+    const courses= await Course.find({},{"__v":0}).limit(limit).skip(skip)
     res.json({ status : httpStatusText.SUCCESS,data:{courses}})
 }
 
