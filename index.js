@@ -19,6 +19,10 @@ app.use((req,res,next)=>{
 return res.status(404).json({status:httpStatusText.ERROR,message:"url not found"})
     
 }) 
+app.use((err,req,res,next)=>{
+ 
+    res.status(err.statusCode||500).json({status:err.statusText||httpStatusText.ERROR,message:err.message,code:err.statusCode})
+})
 
 
 app.listen(process.env.PORT ||3000, () => {
