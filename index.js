@@ -6,15 +6,18 @@ const cors = require('cors')
 const app = express()
 app.use(express.json())
 const coursesRouters= require('./routes/courseRoutes')
+const userRouters=require('./routes/userRoutes')
 mongoose.connect(process.env.MONGODB_URL).then(()=>{
     console.log("database is connected");
-}).catch(()=>{
+}).catch((err)=>{
+    console.log(err);
+    
     console.log("database is not connected");
 }) 
 app.use(cors())
 
 app.use('/api/courses',coursesRouters)
-
+app.use('/api/users',userRouters)
 app.use((req,res,next)=>{
 return res.status(404).json({status:httpStatusText.ERROR,message:"url not found"})
     
