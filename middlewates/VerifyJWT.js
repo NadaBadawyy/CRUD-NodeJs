@@ -4,7 +4,7 @@ const jwt= require('jsonwebtoken')
 const verifyToken=async (req,res,next)=>{
     const authHeader=req.headers['token']||req.headers['Token']
     if(!authHeader){
-        const error=AppError.create('token is required',400,httpStatusText.FAIL)
+        const error=AppError.create('User is not authorized',401,httpStatusText.FAIL)
         return next(error)
     }
     const token=authHeader.split(' ')[1]

@@ -3,6 +3,7 @@ const User = require('../models/users.model')
 const AppError = require('../utils/AppError')
 const httpStatusText = require('../utils/httpStatusText')
 const bcrypt = require('bcryptjs')
+const {validationResult}=require('express-validator')
 const getUsers = async (req, res) => {
     
 
@@ -15,6 +16,11 @@ const getUsers = async (req, res) => {
 
 }
 const register = async (req, res, next) => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        const error = AppError.create(errors.array(), 400, httpStatusText.FAIL)
+        return next(error)
+    }
 
     const { firstname, lastname, email, password } = req.body
     const oldUser = await User.findOne({ email })
@@ -38,6 +44,12 @@ const register = async (req, res, next) => {
     res.status(201).json({ status: httpStatusText.SUCCESS, data: { user: newUser } })
 }
 const login = async(req,res,next) => {
+    const errors = validationResult(req)
+    if (!errors.isEmpty()) {
+        const error = AppError.create(errors.array(), 400, httpStatusText.FAIL)
+        return next(error)
+    }
+
     const {email,password}=req.body
 
     const user= await User.findOne({email:email})
