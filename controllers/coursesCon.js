@@ -5,7 +5,7 @@ const AsyncWrapper = require('../middlewates/AsyncWrapper')
 const AppError = require('../utils/AppError')
 const getAllCourses = AsyncWrapper(async (req, res) => {
     const query = req.query
-    const limit = query.limit || 2
+    const limit = query.limit || 10
     const page = query.page || 1
     const skip = (page - 1) * limit
 
