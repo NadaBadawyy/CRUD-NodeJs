@@ -3,15 +3,16 @@ const User = require('../models/users.model')
 const AppError = require('../utils/AppError')
 const httpStatusText = require('../utils/httpStatusText')
 const bcrypt = require('bcryptjs')
-const {validationResult}=require('express-validator')
+const { validationResult } = require('express-validator')
+const generateToken = require('../utils/generateToken')
 const getUsers = async (req, res) => {
-    
+
 
     const query = req.query
     const limit = query.limit || 10
     const page = query.page || 1
     const skip = (page - 1) * limit
-    const users = await User.find({}, { "__v": 0,"password":0,"token":0 }).limit(limit).skip(skip)
+    const users = await User.find({}, { "__v": 0, "password": 0, "token": 0 }).limit(limit).skip(skip)
     res.json({ status: httpStatusText.SUCCESS, data: { users } })
 
 }
@@ -21,8 +22,7 @@ const register = async (req, res, next) => {
         const error = AppError.create(errors.array(), 400, httpStatusText.FAIL)
         return next(error)
     }
-
-    const { firstname, lastname, email, password } = req.body
+    const { firstname, lastname, email, password, role } = req.body
     const oldUser = await User.findOne({ email })
     if (oldUser) {
         const error = AppError.create('Email is already Exist', 400, httpStatusText.FAIL)
@@ -30,45 +30,43 @@ const register = async (req, res, next) => {
     }
 
     const hashedPassword = await bcrypt.hash(password, 9)
-    
 
     const newUser = new User({
         firstname,
         lastname,
         email,
-        password:hashedPassword
+        password: hashedPassword, role
     })
-    const token=jwt.sign({id:newUser._id,email:newUser.email},process.env.JWT_SECRET_KEY,{expiresIn:'1m'})
-    newUser.token=token
+    const token = generateToken({ id: newUser._id, email: newUser.email ,role:newUser.role})
     await newUser.save()
-    res.status(201).json({ status: httpStatusText.SUCCESS, data: { user: newUser } })
+    res.status(201).json({ status: httpStatusText.SUCCESS, data: { user: newUser, token } })
 }
-const login = async(req,res,next) => {
+const login = async (req, res, next) => {
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
         const error = AppError.create(errors.array(), 400, httpStatusText.FAIL)
         return next(error)
     }
 
-    const {email,password}=req.body
+    const { email, password } = req.body
 
-    const user= await User.findOne({email:email})
-    if(!user){
-        const error= AppError.create('user is not found',400,httpStatusText.FAIL)
+    const user = await User.findOne({ email: email })
+    if (!user) {
+        const error = AppError.create('user is not found', 400, httpStatusText.FAIL)
         return next(error)
     }
-    const matchedPassword= await bcrypt.compare(password,user.password)
-    if(user&&matchedPassword){
-     const token=jwt.sign({id:user._id,email:user.email},process.env.JWT_SECRET_KEY,{expiresIn:'1m'})
-     res.json({status:httpStatusText.SUCCESS,data:{token}})
-     
+    const matchedPassword = await bcrypt.compare(password, user.password)
+    if (user && matchedPassword) {
+        const token = generateToken({ id: user._id, email: user.email,role:user.role })
+        res.json({ status: httpStatusText.SUCCESS, data: { token } })
+
     }
-    else{
-        const error= AppError.create('password is not correct',400,httpStatusText.FAIL)
+    else {
+        const error = AppError.create('password is not correct', 400, httpStatusText.FAIL)
         return next(error)
     }
 
- }
+}
 module.exports = {
     getUsers,
     login,
