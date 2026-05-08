@@ -17,6 +17,7 @@ const getUsers = async (req, res) => {
 
 }
 const register = async (req, res, next) => {
+    
     const errors = validationResult(req)
     if (!errors.isEmpty()) {
         const error = AppError.create(errors.array(), 400, httpStatusText.FAIL)
@@ -35,7 +36,9 @@ const register = async (req, res, next) => {
         firstname,
         lastname,
         email,
-        password: hashedPassword, role
+        password: hashedPassword, 
+        role,
+        avatar:req.file.filename
     })
     const token = generateToken({ id: newUser._id, email: newUser.email ,role:newUser.role})
     await newUser.save()
